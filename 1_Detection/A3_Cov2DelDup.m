@@ -49,27 +49,28 @@ plotSamples  = "ON";  % plot individual samples for control
 % load artefact regions and exclude them
 arte.path = '/home/isabel/Documents/Doktorarbeit_Mai2022/1_kleinesPaper/allLists/Bs166NCe_ArteCov.txt';
 if ~isempty(arte.path)
-fid = fopen(arte.path);
-imp = textscan(fid,'%f %f %s %s','headerLines', 1);
-fclose(fid);
-arte.InS = imp{1};
-arte.InE = imp{2};
-arte.type = imp{3};
+    fid = fopen(arte.path);
+    imp = textscan(fid,'%f %f %s %s','headerLines', 1);
+    fclose(fid);
+    arte.InS = imp{1};
+    arte.InE = imp{2};
+    arte.type = imp{3};
 end
 %load mm regions and exclude them
 mm.path = '/home/isabel/Documents/Doktorarbeit_Mai2022/1_kleinesPaper/allLists/Bs166NCe_mm.txt';
 if ~isempty(mm.path)
-fid = fopen(mm.path);
-imp = textscan(fid,'%f %f %f');
-fclose(fid);
-mm.InS = imp{1};
-mm.InE = imp{2};
+    fid = fopen(mm.path);
+    imp = textscan(fid,'%f %f %f');
+    fclose(fid);
+    mm.InS = imp{1};
+    mm.InE = imp{2};
 end
 
 %% preparations: 
 % load the data
 for i=1:numel(covsample)
-    fid = fopen([covpath + covsample(i) + covsuffix]);
+    fileToLoad = dir([covpath + covsample(i) + covsuffix]);
+    fid = fopen(fileToLoad.folder + "\" + fileToLoad.name);
     imp = textscan(fid,'%s %f %f');
     fclose(fid);
     in(i).cov = imp{3};
@@ -91,20 +92,20 @@ xlabel('mapping reads')
 % make an artefacts mask for del and dup
 artedel_mask = ones(refchr,1); artedup_mask = ones(refchr,1);
 if ~isempty(arte.path)
-delidx = find(ismember({arte.type{:}},'del'));
-dupidx = find(ismember({arte.type{:}},'dup'));
+    delidx = find(ismember({arte.type{:}},'del'));
+    dupidx = find(ismember({arte.type{:}},'dup'));
 end
 if ~isempty(mm.path)
-edel = [arte.InS(delidx) arte.InE(delidx); mm.InS mm.InE];
-edup = [arte.InS(dupidx) arte.InE(dupidx); mm.InS mm.InE];
-end
+    edel = [arte.InS(delidx) arte.InE(delidx); mm.InS mm.InE];
+    edup = [arte.InS(dupidx) arte.InE(dupidx); mm.InS mm.InE];
+    end
 if ~isempty(arte.path) || ~isempty(mm.path)
-for i=1:size(edel,1)    
-    artedel_mask(edel(i,1):edel(i,2)) = zeros(edel(i,2)-edel(i,1)+1,1);
-end
-for i=1:size(edup,1)  
-    artedup_mask(edup(i,1):edup(i,2)) = zeros(edup(i,2)-edup(i,1)+1,1);
-end
+    for i=1:size(edel,1)    
+        artedel_mask(edel(i,1):edel(i,2)) = zeros(edel(i,2)-edel(i,1)+1,1);
+    end
+    for i=1:size(edup,1)  
+        artedup_mask(edup(i,1):edup(i,2)) = zeros(edup(i,2)-edup(i,1)+1,1);
+    end
 end
 clear delidx dupidx
 
@@ -152,7 +153,7 @@ for i=1:numel(covsample)
     % cut the deletions that are smaller than a number minL
     maskL = (edge - start +1) > minL;
     if ORI==1 && (edge(end) + (refchr - start(end) +1)) > minL
-    maskL(end) = true;
+        maskL(end) = true;
     end
     start_minL = start(maskL);
     edge_minL = edge(maskL);   
@@ -187,7 +188,7 @@ clear an delmask delmask2 edge edge_minL fid imp j m maskL maskmin0 ORI p stapel
 m = 0;
 for i=1:numel(covsample)
     m = m+1;
-     %first set the paramters that are important and save them
+    %first set the paramters that are important and save them
     duplication(m).mu = mean(in(i).cov);
     duplication(m).sigma = std( in(i).cov);
     duplication(m).cutoff_factor = cutoff;   
@@ -226,7 +227,7 @@ for i=1:numel(covsample)
     % cut the duplications that are smaller than a number minL
     maskL = (edge - start +1) > minL;
     if ORI==1 && (edge(end) + (refchr - start(end) +1)) > minL
-    maskL(end) = true;
+        maskL(end) = true;
     end
     start_minL = start(maskL);
     edge_minL = edge(maskL);   
