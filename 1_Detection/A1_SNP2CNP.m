@@ -199,11 +199,27 @@ excl_mask = unique(sort(excl_mask));
 
 % Read in artefacts.vcf (recipient reads aligned to its own dictionary)
 fid = fopen(artefacts);
-imp = textscan(fid, '%s %f %s %s %s %f %s %s %s %s', 'HeaderLines', 33);
+% Determine length of file header
+headerLines = 0;
+while ~feof(fid) % loop until break or end of file
+    tline = fgetl(fid); % read line
+    if startsWith(tline, '##')
+        headerLines = headerLines + 1; % +1 and continue
+    elseif startsWith(tline, '#CHROM')
+        headerLines = headerLines + 1; % +1 and continue
+        break;
+    else
+        break; % Exit if non-header line encountered
+    end
+end
+fclose(fid);
+% Reopen to make sure, everything is fine
+fid = fopen(artefacts);
+imp = textscan(fid, '%s %f %s %s %s %f %s %s %s %s', 'HeaderLines', headerLines);
 artefact.pos = imp{2};
 artefact.alt = imp{5};
 fclose(fid);
-clear imp; 
+clear imp;
 
 %% This loop goes through all samples in samplenames
 
